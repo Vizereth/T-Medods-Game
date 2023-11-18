@@ -1,9 +1,41 @@
 <template>
   <main class="container">
-    <p :class="['msg', { 'msg--visible': gameOver }]">
+    <p :class="['msg', { hidden: !gameOver }]">
       {{ `Игра окончена :(` }}
     </p>
     <div class="wrapper">
+      <div :class="['difficulty', { hidden: isPlaying }]">
+        <button
+          @click="setDifficulty('easy')"
+          :class="[
+            'difficulty__btn',
+            { 'difficulty__btn--selected': difficulty.name === 'easy' },
+          ]"
+          :disabled="isPlaying"
+        >
+          Легко
+        </button>
+        <button
+          @click="setDifficulty('normal')"
+          :class="[
+            'difficulty__btn',
+            { 'difficulty__btn--selected': difficulty.name === 'normal' },
+          ]"
+          :disabled="isPlaying"
+        >
+          Нормально
+        </button>
+        <button
+          @click="setDifficulty('hard')"
+          :class="[
+            'difficulty__btn',
+            { 'difficulty__btn--selected': difficulty.name === 'hard' },
+          ]"
+          :disabled="isPlaying"
+        >
+          Сложно
+        </button>
+      </div>
       <div class="stats">
         <p>Клик: {{ clicksTotal }}</p>
         <p>Раунд: {{ currentRound }}</p>
@@ -25,7 +57,7 @@
       </table>
     </div>
     <button
-      :class="['btn', { 'btn--visible': !isPlaying }]"
+      :class="['btn', { hidden: isPlaying }]"
       :disabled="isPlaying"
       @click="startGame()"
     >
@@ -37,6 +69,11 @@
 <script>
 import { reactive, toRefs } from "@vue/composition-api";
 
+import sound1 from "@/assets/sounds/1.mp3";
+import sound2 from "@/assets/sounds/2.mp3";
+import sound3 from "@/assets/sounds/3.mp3";
+import sound4 from "@/assets/sounds/4.mp3";
+
 const getRandomInt = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
@@ -44,14 +81,25 @@ const getRandomInt = (min, max) => {
 export default {
   setup() {
     const state = reactive({
+      sounds: [
+        [new Audio(sound1), new Audio(sound2)],
+        [new Audio(sound3), new Audio(sound4)],
+      ],
       board: [
         [0, 0],
         [0, 0],
       ],
+      difficultyConfig: {
+        easy: { showSquareDelay: 1500, showSquareDuration: 500 },
+        normal: { showSquareDelay: 1000, showSquareDuration: 500 },
+        hard: { showSquareDelay: 400, showSquareDuration: 500 },
+      },
+      difficulty: {
+        name: "easy",
+        config: { showSquareDelay: 1500, showSquareDuration: 500 },
+      },
       pattern: [],
       playingPattern: false,
-      showSquareDuration: 500,
-      showSquareDelay: 500,
       tempSquare: [],
       currentRound: 1,
       clicksTotal: 0,
@@ -69,6 +117,10 @@ export default {
       playPattern();
     }
 
+    function setDifficulty(k) {
+      state.difficulty = { name: k, config: state.difficultyConfig[k] };
+    }
+
     function reset() {
       state.pattern = [];
       state.tempSquare = [];
@@ -76,6 +128,17 @@ export default {
       state.gameOver = false;
       state.clicksNumber = 0;
       state.clicksTotal = 0;
+    }
+
+    function nextRound() {
+      state.isLocked = true;
+
+      state.clicksNumber = 0;
+      state.currentRound += 1;
+      state.pattern = [];
+
+      generatePattern();
+      playPattern();
     }
 
     function playPattern() {
@@ -92,20 +155,9 @@ export default {
                 state.isLocked = false;
               }, 1000);
             }
-          }, (state.showSquareDuration + state.showSquareDelay) * index);
+          }, (state.difficulty.config.showSquareDelay + state.difficulty.config.showSquareDuration) * index);
         });
       }, 1000);
-    }
-
-    function nextRound() {
-      state.isLocked = true;
-
-      state.clicksNumber = 0;
-      state.currentRound += 1;
-      state.pattern = [];
-
-      generatePattern();
-      playPattern();
     }
 
     function generatePattern() {
@@ -133,7 +185,6 @@ export default {
       }
 
       state.pattern = newPattern;
-      console.log(state.pattern);
     }
 
     function generateCoords() {
@@ -141,13 +192,12 @@ export default {
     }
 
     function handleSquareClick(x, y) {
+      state.sounds[x][y].play();
+
       const patternSquare = state.pattern[state.clicksNumber];
       const [patternSquareX, patternSquareY] = patternSquare;
 
-      if (
-        x === patternSquareX &&
-        y === patternSquareY
-      ) {
+      if (x === patternSquareX && y === patternSquareY) {
         state.clicksNumber += 1;
         state.clicksTotal += 1;
       } else {
@@ -162,7 +212,11 @@ export default {
     }
 
     const isTempSquare = (x, y) => {
-      return state.tempSquare.length && x === state.tempSquare[0] && y === state.tempSquare[1];
+      return (
+        state.tempSquare.length &&
+        x === state.tempSquare[0] &&
+        y === state.tempSquare[1]
+      );
     };
 
     return {
@@ -174,11 +228,11 @@ export default {
       reset,
       handleSquareClick,
       isTempSquare,
+      setDifficulty,
     };
   },
 };
 /* eslint-enable */
-
 </script>
 
 <style lang="scss">
@@ -186,7 +240,7 @@ export default {
 $color-1: #555;
 $color-2: #666666;
 $color-3: #ff4040;
-$color-4: #74c365;
+$color-4: #ff9933;
 
 // Other
 $transition: 100ms ease-in;
@@ -205,7 +259,6 @@ $device-mobile-small: 480px; // Phone S
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 50px;
   padding: 50px 0;
 
@@ -221,19 +274,44 @@ $device-mobile-small: 480px; // Phone S
 }
 
 .msg {
-  visibility: hidden;
   color: $color-3;
-
-  &--visible {
-    visibility: visible;
-  }
+  font-size: 18px;
 }
 
 .stats {
   display: flex;
   justify-content: space-between;
-
+  gap: 10px;
   font-size: 14px;
+}
+
+.difficulty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 25px;
+
+  &__btn {
+    padding: 10px 20px;
+    transition: 0.25s;
+
+    &--selected,
+    &:active,
+    &:focus {
+      color: $color-4;
+    }
+
+    &:hover:not(.difficulty__btn--selected) {
+      text-decoration: line-through;
+    }
+  }
+}
+
+.hidden {
+  pointer-events: none;
+  visibility: hidden;
 }
 
 .board {
@@ -260,7 +338,6 @@ $device-mobile-small: 480px; // Phone S
 }
 
 .btn {
-  visibility: hidden;
   background: linear-gradient($color-1 0 0) 100% 0,
     linear-gradient($color-1 0 0) 0 0, linear-gradient($color-1 0 0) 0 100%,
     linear-gradient($color-1 0 0) 100% 100%;
@@ -268,10 +345,6 @@ $device-mobile-small: 480px; // Phone S
   background-repeat: no-repeat;
   transition: 0.25s;
   padding: 10px 20px;
-
-  &--visible {
-    visibility: visible;
-  }
 
   &:hover {
     --d: 100%;

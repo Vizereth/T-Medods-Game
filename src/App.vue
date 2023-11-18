@@ -74,15 +74,11 @@ button {
   cursor: pointer;
   color: inherit;
   outline: none;
+  border: none;
 }
 
 a {
   color: inherit;
-}
-
-:focus {
-  border: inherit;
-  outline: none;
 }
 
 a:link,
@@ -122,7 +118,7 @@ h6 {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 15px;
+  padding: 0 15px;
 
   color: $textColor;
   font-family: sans-serif;
