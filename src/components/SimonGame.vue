@@ -334,6 +334,11 @@ $device-mobile-small: 480px; // Phone S
     &:hover {
       background-color: $color-2;
     }
+
+    @include maxMobileSmall {
+        width: $squareSize * 4/5;
+        height: $squareSize * 4/5;
+    }
   }
 }
 
