@@ -41,7 +41,7 @@
         <p>Раунд: {{ currentRound }}</p>
       </div>
       <table :class="['board', { locked: isLocked }]">
-        <tr v-for="(row, x) in board" :key="x" class="board__row">
+        <tr v-for="(row, x) in matrix" :key="x" class="board__row">
           <td
             v-for="(square, y) in row"
             :key="`${x}-${y}`"
@@ -81,13 +81,9 @@ const getRandomInt = (min, max) => {
 export default {
   setup() {
     const state = reactive({
-      sounds: [
-        [new Audio(sound1), new Audio(sound2)],
-        [new Audio(sound3), new Audio(sound4)],
-      ],
-      board: [
-        [0, 0],
-        [0, 0],
+      matrix: [
+        [{ sound: new Audio(sound1) }, { sound: new Audio(sound2) }],
+        [{ sound: new Audio(sound3) }, { sound: new Audio(sound4) }],
       ],
       difficultyConfig: {
         easy: { showSquareDelay: 1500, showSquareDuration: 500 },
@@ -115,6 +111,12 @@ export default {
 
       generatePattern();
       playPattern();
+    }
+
+    function endGame() {
+      state.isPlaying = false;
+      state.isLocked = true;
+      state.gameOver = true;
     }
 
     function setDifficulty(k) {
@@ -192,7 +194,7 @@ export default {
     }
 
     function handleSquareClick(x, y) {
-      state.sounds[x][y].play();
+      state.matrix[x][y].sound.play();
 
       const patternSquare = state.pattern[state.clicksNumber];
       const [patternSquareX, patternSquareY] = patternSquare;
@@ -201,8 +203,7 @@ export default {
         state.clicksNumber += 1;
         state.clicksTotal += 1;
       } else {
-        state.isPlaying = false;
-        state.gameOver = true;
+        endGame();
         return;
       }
 
@@ -232,7 +233,6 @@ export default {
     };
   },
 };
-/* eslint-enable */
 </script>
 
 <style lang="scss">
