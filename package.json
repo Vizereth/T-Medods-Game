@@ -1,10 +1,10 @@
 {
-  "homepage": "https://sophrona.github.io/medods-game/",
+  "homepage": "https://sophrona.github.io/T-Medods-Game/",
   "name": "game",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "dev": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "deploy": "gh-pages -d dist",

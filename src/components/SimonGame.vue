@@ -151,6 +151,9 @@ export default {
           setTimeout(() => {
             state.tempSquare = square;
 
+            const [x,y] = square;
+            state.matrix[x][y].sound.play();
+
             if (index === state.pattern.length - 1) {
               setTimeout(() => {
                 state.playingPattern = false;
