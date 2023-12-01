@@ -1,4 +1,4 @@
-### Тестовое задание для Medods #2 - Game
+# Test task for Medods #2 - Game
 
 ## Deploy
 
