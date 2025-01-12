@@ -2,7 +2,7 @@
 
 ## Deploy
 
-https://sophrona.github.io/T-Medods-Game
+https://vizereth.github.io/T-Medods-Game
 
 ## Project setup
 ```
