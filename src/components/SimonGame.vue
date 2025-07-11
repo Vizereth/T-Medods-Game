@@ -40,21 +40,21 @@
         <p>Клик: {{ clicksTotal }}</p>
         <p>Раунд: {{ currentRound }}</p>
       </div>
-      <table :class="['board', { locked: isLocked }]">
-        <tr v-for="(row, x) in matrix" :key="x" class="board__row">
-          <td
-            v-for="(square, y) in row"
+      <div :class="['board', { locked: isLocked }]">
+        <div v-for="(row, x) in matrix" :key="x" class="board__row">
+          <div
+            v-for="(_, y) in row"
             :key="`${x}-${y}`"
             :class="[
-              'board__square',
+              `board__square board__square--${x}${y}`,
               {
-                'board__square--temp': isTempSquare(x, y) && playingPattern,
+                active: isTempSquare(x, y) && playingPattern,
               },
             ]"
             @click="handleSquareClick(x, y)"
-          ></td>
-        </tr>
-      </table>
+          ></div>
+        </div>
+      </div>
     </div>
     <button
       :class="['btn', { hidden: isPlaying }]"
@@ -151,7 +151,7 @@ export default {
           setTimeout(() => {
             state.tempSquare = square;
 
-            const [x,y] = square;
+            const [x, y] = square;
             state.matrix[x][y].sound.play();
 
             if (index === state.pattern.length - 1) {
@@ -245,15 +245,32 @@ $color-2: #666666;
 $color-3: #ff4040;
 $color-4: #ff9933;
 
+$slice-color-1: #e74c3c; // vibrant red (like a juicy cherry)
+$slice-color-2: #3498db; // bright, cool blue
+$slice-color-3: #2ecc71; // fresh green, almost minty
+$slice-color-4: #f1c40f;
+
 // Other
 $transition: 100ms ease-in;
 $squareSize: 125px;
-$device-mobile-small: 480px; // Phone S
+$device-mobile-small: 480px;
 
 // Mixins
 @mixin maxMobileSmall {
   @media screen and (max-width: $device-mobile-small) {
     @content;
+  }
+}
+
+@keyframes showSlice {
+  0% {
+    filter: brightness(50%) grayscale(25%);
+  }
+  50% {
+    filter: brightness(100%) grayscale(0%);
+  }
+  100% {
+    filter: brightness(50%) grayscale(25%);
   }
 }
 
@@ -286,6 +303,7 @@ $device-mobile-small: 480px; // Phone S
   justify-content: space-between;
   gap: 10px;
   font-size: 14px;
+  margin-bottom: 15px;
 }
 
 .difficulty {
@@ -318,29 +336,56 @@ $device-mobile-small: 480px; // Phone S
 }
 
 .board {
-  border-collapse: collapse;
-  border: 2px solid $color-1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 
   &.locked {
     pointer-events: none;
   }
 
+  &__row {
+    display: flex;
+    gap: 10px;
+  }
+
   &__square {
-    border: 1px solid $color-1;
+    filter: brightness(50%) grayscale(25%);
     width: $squareSize;
     height: $squareSize;
 
-    &--temp {
-      animation: showSquare 500ms ease-in-out;
+    &:hover {
+      filter: brightness(100%) grayscale(0%);
+      transform: scale(1.025);
     }
 
-    &:hover {
-      background-color: $color-2;
+    &.active {
+      animation: showSlice 400ms ease-out;
+    }
+
+    &--00 {
+      background-color: $slice-color-1;
+      border-top-left-radius: 100% 100%;
+    }
+
+    &--01 {
+      background-color: $slice-color-2;
+      border-top-right-radius: 100% 100%;
+    }
+
+    &--10 {
+      background-color: $slice-color-3;
+      border-bottom-left-radius: 100% 100%;
+    }
+
+    &--11 {
+      background-color: $slice-color-4;
+      border-bottom-right-radius: 100% 100%;
     }
 
     @include maxMobileSmall {
-        width: $squareSize * 4/5;
-        height: $squareSize * 4/5;
+      width: $squareSize * 4/5;
+      height: $squareSize * 4/5;
     }
   }
 }
@@ -356,18 +401,6 @@ $device-mobile-small: 480px; // Phone S
 
   &:hover {
     --d: 100%;
-  }
-}
-
-@keyframes showSquare {
-  0% {
-    background-color: transparent;
-  }
-  50% {
-    background-color: $color-2;
-  }
-  100% {
-    background-color: transparent;
   }
 }
 </style>

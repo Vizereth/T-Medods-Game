@@ -1,7 +1,7 @@
 const { defineConfig } = require('@vue/cli-service')
 module.exports = defineConfig({
   publicPath: process.env.NODE_ENV === 'production'
-  ? '/T-Medods-Game/'  // Replace with your repository name
+  ? '/test-medods-game/'  // Replace with your repository name
   : '/',
   transpileDependencies: true
 })
